@@ -5,10 +5,12 @@ using TrueValueHub.Data;
 using TrueValueHub.Interfaces;
 using TrueValueHub.Repositories;
 using TrueValueHub.Services;
+using AutoMapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options =>
