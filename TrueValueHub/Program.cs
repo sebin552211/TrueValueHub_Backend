@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using TrueValueHub.Data;
 using TrueValueHub.Interfaces;
 using TrueValueHub.Repositories;
+using TrueValueHub.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,7 @@ builder.Services.AddDbContext<ApiDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IPartRepository, PartRepository>();
+builder.Services.AddScoped<IPartService, PartService>();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

@@ -75,32 +75,36 @@ namespace TrueValueHub.Repositories
                 return false;
             }
         }
-        public Part GetPartById(int partId)
+        public async Task<Part> GetPartById(int partId)
         {
-            return _context.Parts.FirstOrDefault(p => p.PartId == partId);
+            return await _context.Parts.FirstOrDefaultAsync(p => p.PartId == partId);
         }
 
-        public async Task<bool> AddManufacturingToPart(int partId, Manufacturing newManufacturing)
+
+        public async Task<int> AddManufacturingToPart(int partId, Manufacturing newManufacturing)
         {
-            var part = GetPartById(partId);
+            var part = await GetPartById(partId); // Ensure this is an asynchronous call
             if (part == null)
             {
-                return false;
-
+                return -1; // Indicate that the part was not found
             }
+
             try
             {
                 newManufacturing.PartId = partId; // Ensure PartId is set before adding
                 await _context.Manufacturings.AddAsync(newManufacturing);
                 await _context.SaveChangesAsync();
-                return true;
+
+                // Return the newly created manufacturingId
+                return newManufacturing.ManufacturingId; // Ensure ManufacturingId is set after saving
             }
             catch (DbUpdateException ex)
             {
                 Console.WriteLine($"Error updating database: {ex.Message}");
-                return false;
+                return -1; // Indicate an error occurred
             }
         }
+
 
         public async Task<IEnumerable<Manufacturing>> GetManufacturingsByPartId(int partId)
         {

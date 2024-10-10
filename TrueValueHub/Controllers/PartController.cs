@@ -8,18 +8,18 @@ namespace TrueValueHub.Controllers
     [ApiController]
     public class PartController : ControllerBase
     {
-        private readonly IPartRepository _partRepository;
+        private readonly IPartService _partService;
 
-        public PartController(IPartRepository partRepository)
+        public PartController(IPartService partService)
         {
-            _partRepository = partRepository;
+            _partService = partService;
         }
 
         // GET: api/parts
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Part>>> GetParts()
         {
-            var parts = await _partRepository.GetAllParts();
+            var parts = await _partService.GetAllParts();
             return Ok(parts);
         }
 
@@ -27,7 +27,7 @@ namespace TrueValueHub.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Part>> GetPart(string id)
         {
-            var part = await _partRepository.GetPartByInternalPartNo(id);
+            var part = await _partService.GetPartByInternalPartNo(id);
 
             if (part == null)
             {
@@ -41,7 +41,7 @@ namespace TrueValueHub.Controllers
         [HttpPost]
         public async Task<ActionResult<Part>> PostPart(Part part)
         {
-            await _partRepository.AddPart(part);
+            await _partService.AddPart(part);
             return CreatedAtAction(nameof(GetPart), new { id = part.PartId }, part);
         }
 
@@ -49,29 +49,27 @@ namespace TrueValueHub.Controllers
         [HttpPut("{internalPartNumber}")]
         public async Task<IActionResult> PutPart(string internalPartNumber, Part part)
         {
-            Console.WriteLine($"Route internalPartNumber: {internalPartNumber}, Body internalPartNumber: {part.InternalPartNumber}");
-
-
-            var isUpdated = await _partRepository.UpdatePart(part,internalPartNumber);
-            if (isUpdated == true)
+            var isUpdated = await _partService.UpdatePart(part, internalPartNumber);
+            if (isUpdated)
             {
-                return Ok(" parts Updated Successfully");
+                return Ok("Parts Updated Successfully");
             }
             return BadRequest();
         }
+
         [HttpPost("{partId}/manufacturings")]
         public async Task<IActionResult> AddManufacturing(int partId, [FromBody] Manufacturing newManufacturing)
         {
             if (newManufacturing == null)
             {
-                return BadRequest("Material cannot be null.");
+                return BadRequest("Manufacturing cannot be null.");
             }
 
-           var isAdded =  await _partRepository.AddManufacturingToPart(partId, newManufacturing);
+            var manufacturingId = await _partService.AddManufacturingToPart(partId, newManufacturing);
 
-            if (isAdded == true)
+            if (manufacturingId > 0)
             {
-                return Ok("Added Successfully");
+                return Ok(manufacturingId);
             }
 
             return NotFound("Part not found or manufacturing could not be added.");
@@ -80,7 +78,7 @@ namespace TrueValueHub.Controllers
         [HttpGet("{partId}/manufacturings")]
         public async Task<ActionResult<IEnumerable<Manufacturing>>> GetManufacturingsByPartId(int partId)
         {
-            var manufacturings = await _partRepository.GetManufacturingsByPartId(partId);
+            var manufacturings = await _partService.GetManufacturingsByPartId(partId);
             if (manufacturings == null || !manufacturings.Any())
             {
                 return NotFound("No manufacturing records found for this part.");
@@ -97,7 +95,7 @@ namespace TrueValueHub.Controllers
                 return BadRequest("Manufacturing cannot be null.");
             }
 
-            var isUpdated = await _partRepository.UpdateManufacturing(partId, manufacturingId, manufacturing);
+            var isUpdated = await _partService.UpdateManufacturing(partId, manufacturingId, manufacturing);
             if (isUpdated)
             {
                 return Ok("Manufacturing updated successfully.");
@@ -109,7 +107,7 @@ namespace TrueValueHub.Controllers
         [HttpDelete("{partId}/manufacturings/{manufacturingId}")]
         public async Task<IActionResult> DeleteManufacturing(int partId, int manufacturingId)
         {
-            var isDeleted = await _partRepository.DeleteManufacturing(partId, manufacturingId);
+            var isDeleted = await _partService.DeleteManufacturing(partId, manufacturingId);
             if (isDeleted)
             {
                 return Ok("Manufacturing deleted successfully.");
@@ -117,6 +115,5 @@ namespace TrueValueHub.Controllers
 
             return NotFound("Manufacturing not found.");
         }
-
     }
 }
