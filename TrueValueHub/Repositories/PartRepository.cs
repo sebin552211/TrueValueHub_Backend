@@ -3,6 +3,7 @@ using TrueValueHub.Data;
 using TrueValueHub.Interfaces;
 using TrueValueHub.Models;
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
 
 
 namespace TrueValueHub.Repositories
@@ -11,21 +12,26 @@ namespace TrueValueHub.Repositories
     {
        
             private readonly ApiDbContext _context;
+        private readonly IMapper _mapper;
 
-            public PartRepository(ApiDbContext context)
+        public PartRepository(ApiDbContext context, IMapper mapper)
             {
                 _context = context;
-            }
+            _mapper = mapper;
+        }
+
 
             public async Task<IEnumerable<Part>> GetAllParts()
             {
                 return await _context.Parts.ToListAsync();
             }
 
+
             public async Task<Part> GetPartByInternalPartNo(string id)
             {
             return await _context.Parts.Include(p => p.Manufacturings).FirstOrDefaultAsync(p => p.InternalPartNumber == id);
             }
+
 
             public async Task AddPart(Part part)
             {
@@ -33,9 +39,9 @@ namespace TrueValueHub.Repositories
                 await _context.SaveChangesAsync();
             }
 
-            public async Task<bool> UpdatePart(Part part, string internalPartNumber)
-            {
 
+        public async Task<bool> UpdatePart(Part part, string internalPartNumber)
+        {
             if (internalPartNumber != part.InternalPartNumber)
             {
                 return false;
@@ -45,24 +51,11 @@ namespace TrueValueHub.Repositories
             if (existingPart == null)
             {
                 Console.WriteLine("No part found with the given internalPartNumber.");
-
-                return false; 
+                return false;
             }
 
-            existingPart.InternalPartNumber = part.InternalPartNumber;
-            existingPart.SupplierName = part.SupplierName;
-            existingPart.DeliverySiteName = part.DeliverySiteName;
-            existingPart.DrawingNumber = part.DrawingNumber;
-            existingPart.IncoTerms = part.IncoTerms;
-            existingPart.AnnualVolume = part.AnnualVolume;
-            existingPart.BomQty = part.BomQty;
-            existingPart.DeliveryFrequency = part.DeliveryFrequency;
-            existingPart.LotSize = part.LotSize;
-            existingPart.ManufacturingCategory = part.ManufacturingCategory;
-            existingPart.PackagingType = part.PackagingType;
-            existingPart.ProductLifeRemaining = part.ProductLifeRemaining;
-            existingPart.PaymentTerms = part.PaymentTerms;
-            existingPart.LifetimeQuantityRemaining = part.LifetimeQuantityRemaining;
+            // Use AutoMapper to map properties from part to existingPart
+            _mapper.Map(part, existingPart);
 
             try
             {
@@ -75,6 +68,8 @@ namespace TrueValueHub.Repositories
                 return false;
             }
         }
+
+
         public async Task<Part> GetPartById(int partId)
         {
             return await _context.Parts.FirstOrDefaultAsync(p => p.PartId == partId);
@@ -114,6 +109,7 @@ namespace TrueValueHub.Repositories
             return part?.Manufacturings ?? Enumerable.Empty<Manufacturing>(); // Return an empty list if no manufacturings found
         }
 
+
         public async Task<bool> UpdateManufacturing(int partId, int manufacturingId, Manufacturing updatedManufacturing)
         {
             // Fetch the part along with its manufacturings
@@ -132,16 +128,15 @@ namespace TrueValueHub.Repositories
                 return false; // Manufacturing not found
             }
 
-            // Update manufacturing properties
-            manufacturing.ProcessType = updatedManufacturing.ProcessType;
-            manufacturing.SubProcessType = updatedManufacturing.SubProcessType;
-            manufacturing.MachineDetails = updatedManufacturing.MachineDetails;
-            manufacturing.MachineDescription = updatedManufacturing.MachineDescription;
-            manufacturing.Cost = updatedManufacturing.Cost;
+            // Update manufacturing properties using AutoMapper
+            // Ensure the mapping is set up to ignore key properties if needed
+            _mapper.Map(updatedManufacturing, manufacturing);
 
             // Attempt to save changes
             try
             {
+                // Check the state of the manufacturing entity
+                _context.Entry(manufacturing).State = EntityState.Modified; // Mark as modified
                 await _context.SaveChangesAsync();
                 return true; // Update successful
             }
@@ -153,6 +148,7 @@ namespace TrueValueHub.Repositories
                 return false; // Indicate failure
             }
         }
+
 
 
         public async Task<bool> DeleteManufacturing(int partId, int manufacturingId)
