@@ -25,6 +25,8 @@ builder.Services.AddDbContext<ApiDbContext>(options =>
 
 builder.Services.AddScoped<IPartRepository, PartRepository>();
 builder.Services.AddScoped<IPartService, PartService>();
+builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
