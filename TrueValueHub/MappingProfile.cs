@@ -8,6 +8,9 @@ public class MappingProfile : Profile
         CreateMap<Part, Part>()
             .ForMember(dest => dest.PartId, opt => opt.Ignore()); // Ignore PartId during mapping
         CreateMap<Manufacturing, Manufacturing>();
-            /*.ForMember(dest => dest.ManufacturingId, opt => opt.Ignore()); */
+        /*.ForMember(dest => dest.ManufacturingId, opt => opt.Ignore()); */
+        CreateMap<ProjectDto, Project>();
+        CreateMap<PartDto, Part>();
+
     }
 }

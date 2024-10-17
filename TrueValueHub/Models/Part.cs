@@ -26,7 +26,7 @@ namespace TrueValueHub.Models
         public int AnnualVolume { get; set; }
         public int BomQty { get; set; }
         public int DeliveryFrequency { get; set; }
-        public int LotSize { get; set; }
+        public double LotSize { get; set; }
 
         [StringLength(50)]
         public string ManufacturingCategory { get; set; }
@@ -34,12 +34,12 @@ namespace TrueValueHub.Models
         [StringLength(50)]
         public string PackagingType { get; set; }
 
-        public int ProductLifeRemaining { get; set; }
+        public double ProductLifeRemaining { get; set; }
 
         [StringLength(20)]
         public string PaymentTerms { get; set; }
 
-        public int LifetimeQuantityRemaining { get; set; }
+        public double LifetimeQuantityRemaining { get; set; }
 
         // One-to-Many Relationship: Part belongs to one Project
         public int ProjectId { get; set; } // Foreign Key to Project

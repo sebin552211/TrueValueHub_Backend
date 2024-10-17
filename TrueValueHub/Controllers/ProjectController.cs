@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TrueValueHub.Interfaces;
 using TrueValueHub.Models;
-using TrueValueHub.Services;
 
 namespace TrueValueHub.Controllers
 {
@@ -29,9 +28,7 @@ namespace TrueValueHub.Controllers
 
             try
             {
-                // Call the service to create a new project
                 var result = await _projectService.CreateProjectAsync(projectDto);
-
                 return Ok(result);
             }
             catch (Exception ex)
@@ -42,12 +39,18 @@ namespace TrueValueHub.Controllers
 
         // GET: api/Project
         [HttpGet]
-        public async Task<IActionResult> GetProjects()
+        public async Task<IActionResult> GetProjects([FromQuery] int skip = 0, [FromQuery] int take = 10, [FromQuery] string sortField = null, [FromQuery] string sortOrder = null)
         {
             try
             {
-                var projects = await _projectService.GetAllProjectsAsync();
-                return Ok(projects);
+                var projects = await _projectService.GetProjectsAsync(skip, take, sortField, sortOrder);
+                var totalCount = await _projectService.GetTotalCountAsync();
+
+                return Ok(new
+                {
+                    values = projects,
+                    totalCount = totalCount
+                });
             }
             catch (Exception ex)
             {
@@ -55,6 +58,7 @@ namespace TrueValueHub.Controllers
             }
         }
 
+        // GET: api/Project/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<Project>> GetProjectById(int id)
         {
@@ -66,6 +70,7 @@ namespace TrueValueHub.Controllers
             return Ok(project);
         }
 
+        // PUT: api/Project/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateProject(int id, [FromBody] Project project)
         {
@@ -78,11 +83,27 @@ namespace TrueValueHub.Controllers
             return Ok(updatedProject);
         }
 
+        // DELETE: api/Project/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProject(int id)
         {
             await _projectService.DeleteProjectAsync(id);
             return NoContent();
+        }
+
+        // GET: api/Project/search?name={projectName}
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchProjectsByName([FromQuery] string name)
+        {
+            try
+            {
+                var projects = await _projectService.SearchProjectsByNameAsync(name);
+                return Ok(projects);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
     }
 }

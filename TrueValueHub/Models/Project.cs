@@ -18,6 +18,6 @@ namespace TrueValueHub.Models
         public DateTime ProjectCreatedDate { get; set; } = DateTime.Now;
 
         // One-to-Many relationship with Part
-        public virtual ICollection<Part> Parts { get; set; } = new List<Part>();
+        public virtual List<Part> Parts { get; set; } = new List<Part>();
     }
 }

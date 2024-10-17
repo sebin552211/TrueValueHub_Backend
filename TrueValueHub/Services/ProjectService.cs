@@ -1,54 +1,46 @@
-﻿using System.Collections.Generic;
+﻿using AutoMapper;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TrueValueHub.Interfaces;
 using TrueValueHub.Models;
-using TrueValueHub.Repositories;
 
 namespace TrueValueHub.Services
 {
     public class ProjectService : IProjectService
     {
         private readonly IProjectRepository _projectRepository;
+        private readonly IMapper _mapper;
 
-        public ProjectService(IProjectRepository projectRepository)
+        public ProjectService(IMapper mapper, IProjectRepository projectRepository)
         {
             _projectRepository = projectRepository;
+            _mapper = mapper;
         }
 
         public async Task<Project> CreateProjectAsync(ProjectDto projectDto)
         {
-            var project = new Project
+            // Map ProjectDto to Project using AutoMapper
+            var project = _mapper.Map<Project>(projectDto);
+
+            // If Parts are included, map them as well
+            if (projectDto.Parts != null)
             {
-                ProjectName = projectDto.ProjectName,
-                ProjectDescription = projectDto.Description,
-                ProjectCreatedDate = projectDto.CreatedDate,
-                Parts = projectDto.Parts?.Select(partDto => new Part
-                {
-                    InternalPartNumber = partDto.InternalPartNumber,
-                    SupplierName = partDto.SupplierName,
-                    DeliverySiteName = partDto.DeliverySiteName,
-                    DrawingNumber = partDto.DrawingNumber,
-                    IncoTerms = partDto.IncoTerms,
-                    AnnualVolume = partDto.AnnualVolume,
-                    BomQty = partDto.BomQty,
-                    DeliveryFrequency = partDto.DeliveryFrequency,
-                    LotSize = partDto.LotSize,
-                    ManufacturingCategory = partDto.ManufacturingCategory,
-                    PackagingType = partDto.PackagingType,
-                    ProductLifeRemaining = partDto.ProductLifeRemaining,
-                    PaymentTerms = partDto.PaymentTerms,
-                    LifetimeQuantityRemaining = partDto.LifetimeQuantityRemaining
-                }).ToList()
-            };
+                project.Parts = _mapper.Map<List<Part>>(projectDto.Parts);
+            }
 
             await _projectRepository.AddProjectAsync(project);
-
             return project;
         }
 
-        public async Task<IEnumerable<Project>> GetAllProjectsAsync()
+
+        public async Task<IEnumerable<Project>> GetProjectsAsync(int skip, int take, string sortField, string sortOrder)
         {
-            return await _projectRepository.GetProjectsAsync();
+            return await _projectRepository.GetProjectsAsync(skip, take, sortField, sortOrder);
+        }
+
+        public async Task<int> GetTotalCountAsync()
+        {
+            return await _projectRepository.GetTotalCountAsync();
         }
 
         public async Task<Project> GetProjectByIdAsync(int projectId)
@@ -64,6 +56,11 @@ namespace TrueValueHub.Services
         public async Task DeleteProjectAsync(int projectId)
         {
             await _projectRepository.DeleteProjectAsync(projectId);
+        }
+
+        public async Task<IEnumerable<Project>> SearchProjectsByNameAsync(string projectName)
+        {
+            return await _projectRepository.SearchProjectsByNameAsync(projectName);
         }
     }
 }

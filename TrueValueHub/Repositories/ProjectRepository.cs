@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using TrueValueHub.Data;
 using TrueValueHub.Interfaces;
@@ -22,16 +23,44 @@ namespace TrueValueHub.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Project>> GetProjectsAsync()
+        public async Task<IEnumerable<Project>> GetProjectsAsync(int skip, int take, string sortField, string sortOrder)
         {
-            return await _context.Projects
-                .Include(p => p.Parts)
-                .ToListAsync();
+            IQueryable<Project> query = _context.Projects.Include(p => p.Parts);
+
+            // Sorting logic
+            if (!string.IsNullOrEmpty(sortField))
+            {
+                switch (sortField.ToLower())
+                {
+                    case "projectid":
+                        query = sortOrder?.ToLower() == "asc" ? query.OrderBy(p => p.ProjectId) : query.OrderByDescending(p => p.ProjectId);
+                        break;
+                    case "projectname":
+                        query = sortOrder?.ToLower() == "asc" ? query.OrderBy(p => p.ProjectName) : query.OrderByDescending(p => p.ProjectName);
+                        break;
+                    case "projectdescription":
+                        query = sortOrder?.ToLower() == "asc" ? query.OrderBy(p => p.ProjectDescription) : query.OrderByDescending(p => p.ProjectDescription);
+                        break;
+                    case "projectcreateddate":
+                        query = sortOrder?.ToLower() == "asc" ? query.OrderBy(p => p.ProjectCreatedDate) : query.OrderByDescending(p => p.ProjectCreatedDate);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            return await query.Skip(skip).Take(take).ToListAsync();
+        }
+
+        public async Task<int> GetTotalCountAsync()
+        {
+            return await _context.Projects.CountAsync();
         }
 
         public async Task<Project> GetProjectByIdAsync(int projectId)
         {
-            return await _context.Projects.Include(p => p.Parts).FirstOrDefaultAsync(p => p.ProjectId == projectId);
+            return await _context.Projects.Include(p => p.Parts)
+                                          .FirstOrDefaultAsync(p => p.ProjectId == projectId);
         }
 
         public async Task<Project> UpdateProjectAsync(Project project)
@@ -49,6 +78,14 @@ namespace TrueValueHub.Repositories
                 _context.Projects.Remove(project);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public async Task<IEnumerable<Project>> SearchProjectsByNameAsync(string projectName)
+        {
+            return await _context.Projects
+                                 .Where(p => p.ProjectName.Contains(projectName))
+                                 .Include(p => p.Parts)
+                                 .ToListAsync();
         }
     }
 }

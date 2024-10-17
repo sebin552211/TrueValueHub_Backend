@@ -10,12 +10,12 @@
         public int AnnualVolume { get; set; }
         public int BomQty { get; set; }
         public int DeliveryFrequency { get; set; }
-        public int LotSize { get; set; }
+        public double LotSize { get; set; }
         public string ManufacturingCategory { get; set; }
         public string PackagingType { get; set; }
-        public int ProductLifeRemaining { get; set; }
+        public double ProductLifeRemaining { get; set; }
         public string PaymentTerms { get; set; }
-        public int LifetimeQuantityRemaining { get; set; }
+        public double LifetimeQuantityRemaining { get; set; }
     }
 
 }
