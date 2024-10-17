@@ -5,10 +5,12 @@ using TrueValueHub.Data;
 using TrueValueHub.Interfaces;
 using TrueValueHub.Repositories;
 using TrueValueHub.Services;
+using AutoMapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options =>
@@ -23,6 +25,8 @@ builder.Services.AddDbContext<ApiDbContext>(options =>
 
 builder.Services.AddScoped<IPartRepository, PartRepository>();
 builder.Services.AddScoped<IPartService, PartService>();
+builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

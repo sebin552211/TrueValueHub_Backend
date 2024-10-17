@@ -8,6 +8,7 @@ namespace TrueValueHub.Data
         public ApiDbContext(DbContextOptions<ApiDbContext> options) : base(options) { }
         public DbSet<Part> Parts { get; set; }
         public DbSet<Manufacturing> Manufacturings { get; set; }
+        public DbSet<Project> Projects { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
